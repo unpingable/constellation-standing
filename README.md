@@ -248,3 +248,9 @@ Standing is also a single point of authority by design. Authority unreachable me
 ## License
 
 Licensed under Apache-2.0.
+
+## Operational ECAD composition
+
+Standing owns the operator-to-mandate binding and consumes the exact,
+single-use grant before each diagnostic acquisition. It does not acquire or
+interpret evidence. See the local [Operational ECAD journey](/data/git/operational-ecad/README.md).
