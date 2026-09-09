@@ -8,6 +8,7 @@
 //! a valid transition. Both are written atomically or neither is.
 
 mod continuity;
+pub mod diagnostic;
 pub mod replay;
 mod resolve;
 mod store_resolver;
@@ -819,6 +820,7 @@ impl Store {
             evidence,
             policy_hash,
             None,
+            None,
         )
     }
 
@@ -846,6 +848,7 @@ impl Store {
             evidence,
             policy_hash,
             Some(attempted),
+            None,
         )
     }
 
@@ -859,6 +862,7 @@ impl Store {
         evidence: serde_json::Value,
         policy_hash: Option<&str>,
         attempted_scope: Option<&GrantScope>,
+        exclusive_deadline: Option<DateTime<Utc>>,
     ) -> Result<TransitionResult, StoreError> {
         let tx = self.conn.transaction()?;
 
@@ -987,6 +991,21 @@ impl Store {
             let skew = Duration::seconds(GRANT_EXPIRY_SKEW_SECS);
             if Utc::now() > expires_at + skew && target_state != GrantState::Expired {
                 return Err(StoreError::GrantExpired(expires_at_str.clone()));
+            }
+        }
+
+        // The bounded diagnostic consumer has an exclusive, no-skew deadline.
+        // Check inside the transition transaction, after all current grant guards.
+        // Historical generic grant consumers retain their existing window law.
+        if let Some(deadline) = exclusive_deadline {
+            let expires = grant.expires_at.as_deref().ok_or_else(|| {
+                StoreError::GrantTimeUnparseable("missing diagnostic expiry".into())
+            })?;
+            let expires = DateTime::parse_from_rfc3339(expires)
+                .map_err(|_| StoreError::GrantTimeUnparseable(expires.into()))?
+                .to_utc();
+            if Utc::now() >= deadline.min(expires) {
+                return Err(StoreError::GrantExpired(deadline.min(expires).to_rfc3339()));
             }
         }
 

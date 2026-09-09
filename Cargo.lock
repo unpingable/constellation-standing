@@ -764,6 +764,9 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "clap",
+ "ed25519-dalek",
+ "hex",
+ "serde",
  "serde_json",
  "standing-continuity",
  "standing-grant",
@@ -849,6 +852,7 @@ name = "standing-store"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "ed25519-dalek",
  "hex",
  "rusqlite",
  "serde",

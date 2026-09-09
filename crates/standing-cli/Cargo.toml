@@ -18,6 +18,9 @@ serde_json = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }
 clap = { workspace = true }
+serde = { workspace = true }
+ed25519-dalek = { workspace = true }
+hex = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
