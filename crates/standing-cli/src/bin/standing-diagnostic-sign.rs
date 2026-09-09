@@ -12,6 +12,7 @@ use std::{io::Read as _, path::PathBuf};
 enum Kind {
     Enrollment,
     Request,
+    PublicKey,
 }
 
 #[derive(Parser)]
@@ -85,12 +86,16 @@ fn emit<T: Serialize>(schema: &str, body: T, key: &SigningKey) -> Result<(), Str
     Ok(())
 }
 
+fn public_key_hex(key: &SigningKey) -> String {
+    hex::encode(key.verifying_key().to_bytes())
+}
+
 fn run() -> Result<(), String> {
     let args = Args::parse();
     let key = key(&args.secret_key)?;
-    let bytes = input()?;
     match args.kind {
         Kind::Enrollment => {
+            let bytes = input()?;
             let body: DiagnosticEnrollment =
                 serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
             if body.schema != ENROLLMENT_SCHEMA {
@@ -99,6 +104,7 @@ fn run() -> Result<(), String> {
             emit(ENROLLMENT_SCHEMA, body, &key)
         }
         Kind::Request => {
+            let bytes = input()?;
             let body: DiagnosticRequest =
                 serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
             if body.schema != REQUEST_SCHEMA {
@@ -106,6 +112,24 @@ fn run() -> Result<(), String> {
             }
             emit(REQUEST_SCHEMA, body, &key)
         }
+        Kind::PublicKey => {
+            println!("{}", public_key_hex(&key));
+            Ok(())
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn public_key_is_the_exact_verifying_key() {
+        let key = SigningKey::from_bytes(&[41; 32]);
+        assert_eq!(
+            public_key_hex(&key),
+            "fa4834147f6e690c3693eff61336046403cd8ae2a14f31b3c407358569239565"
+        );
     }
 }
 
