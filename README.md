@@ -1,5 +1,12 @@
 # standing
 
+Public repository name: **Constellation Standing** (`constellation-standing`).
+The implementation remains `standing`: Mandate Custody is an unexecuted naming
+proposal for part of this office, while Standing remains the implemented
+judgment surface. Keep current crate, executable, and `standing.*` wire names.
+See [HOWTO.md](HOWTO.md) for a bounded local journey.
+Public source: <https://github.com/unpingable/constellation-standing>.
+
 > **Status (2026-07-26): the Standing / mandate-custody office —
 > separately instantiated, not part of the current operational vertical.**
 > This repository implements the jurisdiction "may this actor act or assert,

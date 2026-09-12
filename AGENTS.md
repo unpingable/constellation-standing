@@ -16,6 +16,21 @@ cargo run -p standing-cli -- identity create --name deploy-bot --location host-a
 cargo run -p standing-cli -- grant request --identity /tmp/bot.id.json --secret test-key --action deploy --target prod/web-api
 ```
 
+For public documentation, call the repository **Constellation Standing** and
+link `https://github.com/unpingable/constellation-standing`. Keep current crate,
+binary, and `standing.*` wire names. Do not describe the unexecuted Mandate
+Custody rename plan as an implemented product rename.
+
+Before campaign work, identify the selected campaign, exact source revision,
+working directory, output locations, and owning authority boundary. A plan,
+receipt, or passing test does not authorize external effects. For a prolonged
+run, use the campaign-approved durable producer and persist an inspection and
+resume checkpoint before waiting. A fresh supervisor must inspect the original
+producer and evidence and resume it when possible; never restart or replace it
+merely because supervision was interrupted. If no approved durable mechanism
+exists, stop before launch and record that limitation rather than implying the
+run can survive supervisor loss.
+
 ## Tests
 
 ```bash
