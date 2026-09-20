@@ -16,7 +16,9 @@ Core question: "Was this actor entitled to do that, under what grant, with what 
 
 1. **Fail-closed on receipts.** No receipt, no standing. If a receipt write fails, the state transition must roll back.
 2. **Every grant state transition produces a receipt.** No silent transitions.
-3. **Receipts are content-addressed.** Canonical JSON (RFC 8785 / JCS) + SHA-256. Immutable once created.
+3. **Receipts are content-addressed.** Standing's deterministic, sorted-key
+   JSON encoding + SHA-256. It is not RFC 8785/JCS. Receipts are immutable once
+   created.
 4. **Interruption is first-class.** Grant states include abandoned and lease_expired — not just success/failure.
 
 ## Quick Start

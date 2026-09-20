@@ -44,7 +44,11 @@ Retained below as design history only.
 
 **nq-standing should be fail-closed.** No receipt, no standing.
 
-## Shared primitives (via WLP)
+## Historical proposed shared primitives (not implemented)
+
+The following list described the retired WLP bridge. It is retained only to
+explain the earlier design proposal and is not a current Standing dependency or
+compatibility claim.
 
 - Canonical JSON (RFC 8785 / JCS)
 - SHA-256 digests
@@ -78,12 +82,11 @@ The primitives port; only the substrate changes (agent tool calls → workload a
 (coherent cut of fleet state at a point in time) applies to standing and
 to Governor. Governor's gap spec GOV_GAP_DECISION_CONTEXT_001 proposes
 exactly this: content-addressed snapshot of governor state at decision time.
-Standing will need it too — "what was the grant/policy landscape when this
-decision was made?" Standing and Governor should converge on the same
-snapshot-at-decision-time pattern, ideally via WLP.
+Standing may need it too — "what was the grant/policy landscape when this
+decision was made?" Any future convergence on a snapshot-at-decision-time
+pattern needs a new, explicitly qualified contract; WLP is retired.
 
 ## Naming note
 
-If this project ships as `standing` (not `nq-standing`), the WLP bridge
-becomes the explicit link rather than the prefix. That's probably cleaner —
-standing is a sibling of nq, not a child.
+This project ships as `standing`, a sibling of NQ rather than a child. The
+earlier idea that a WLP bridge would provide the explicit link was not pursued.

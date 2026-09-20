@@ -40,7 +40,7 @@ across production identity systems.
 | 23. Caches | No caching layer | No problem yet. |
 | 24. Compromise recovery | Doctrine documented | `docs/compromise-recovery.md` covers repudiation, freeze, revocation, re-key, and genesis compromise. Detection and drills remain operational. |
 | 25. Assessment-compromised state | Implemented | Temporal incoherence, excessive divergence, and storage failures surface separately from allow/deny. |
-| 26. Canonicalization | Versioned formats | Receipts use RFC 8785/JCS + SHA-256; identity signatures cover a fixed versioned field set. |
+| 26. Canonicalization | Versioned formats | Receipts use Standing's deterministic sorted-key JSON + SHA-256 (not RFC 8785/JCS); v2 identity signatures use a domain-separated, labeled, length-delimited transcript. |
 | 27. Attribute provenance | Subject from verified identity, role from ActorContext | Adequate. No derived attributes yet. |
 | 28. TOCTOU | CAS on head digest | Good for grant state. Identity check is point-in-time. |
 | 29. Negative decision semantics | Distinct error types | InvalidTransition, Unauthorized, GrantExpired, GrantNotFound. Good. |
