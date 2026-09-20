@@ -197,6 +197,11 @@ standing assert resolve \
   --body-digest <sha256-of-request-body>
 ```
 
+Workload identities use the version 2 signing transcript. Version 1 identity
+files are refused rather than reinterpreted; regenerate them with `standing
+identity create` before using this release. This changes identity files, not
+existing grant or receipt schemas.
+
 ## Architecture
 
 ```
@@ -218,7 +223,11 @@ splits authority explicitly: the genesis operator issues a lease to a distinct
 speaker; the speaker presents a nonce- and body-bound proof; a binding resolver
 spends the lease before the consumer may treat the claim as consequential.
 
-Receipt format: canonical JSON (RFC 8785 / JCS) + SHA-256. WLP-compatible.
+Receipt format: deterministic JSON (sorted keys, compact) + SHA-256. The format
+is standing's own and is held to no external protocol. Note that it is *not* RFC
+8785 (JCS): number and string rendering follow `serde_json`, not ECMAScript. An
+earlier claim of JCS conformance and WLP compatibility was inaccurate on both
+counts and has been withdrawn.
 
 ## Limitations
 

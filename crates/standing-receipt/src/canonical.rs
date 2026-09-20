@@ -1,8 +1,20 @@
-//! Canonical JSON serialization (RFC 8785 / JCS subset).
+//! Deterministic JSON serialization for receipt content-addressing.
 //!
-//! For WLP compatibility we need deterministic serialization:
-//! sorted keys, no trailing commas, no whitespace, no BOM.
-//! serde_json with sorted keys gets us there for the types we use.
+//! What this provides: sorted keys at every level, no trailing commas, no
+//! whitespace, no BOM. That is sufficient for the types this crate hashes.
+//!
+//! What this is NOT: RFC 8785 (JCS). An earlier comment described it as a
+//! "JCS subset" to justify a WLP compatibility claim. WLP is retired and the
+//! claim is withdrawn, so the accurate description stands on its own: number
+//! formatting and string escaping follow serde_json, not ECMAScript, so output
+//! diverges from JCS for floats. Receipts here hold no floats today.
+//!
+//! Fragility worth knowing: `sort_keys` below is correct only while
+//! `serde_json::Map` is a `BTreeMap`. If any crate in the dependency graph
+//! enables `serde_json/preserve_order`, Cargo feature unification makes this
+//! function a silent no-op. `preserve_order` is not enabled today. Adopting
+//! `serde_jcs` would remove both this hazard and the JCS divergence, at the
+//! cost of rebasing every stored receipt digest.
 
 use serde::Serialize;
 use serde_json::Value;

@@ -18,13 +18,25 @@ Governor is nq-standing for agents. nq-standing is Governor for production workl
 | Standing drift | Claim diff, drift detection |
 | Revocation between issuance and use | TOCTOU — atomic transactions |
 
-## WLP as bridge
+## WLP as bridge — RETIRED 2026-09-20
 
-nq-standing decision receipts are WLP DECISION messages. Options:
-1. Thin receipt format forward-compatible with WLP (same JSON, same hash, no sigs yet)
-2. WLP Phase 1 ships as a library consumed by both Governor and nq-standing
+**Not pursued. Do not reintroduce.** WLP is retired from this integration with
+no named consumer. Standing's receipt format is its own.
 
-Since Governor is Python and nq-standing is Rust: define the receipt format in WLP, implement natively in each language, verify with shared test vectors.
+Worth noting for anyone tempted by a similar bridge later: the plan below ended with
+"verify with shared test vectors," and that step was the one never taken. Three
+implementations of WLP's normatively specified `artifact_hash` drifted apart precisely
+because no shared corpus existed to expose it. If a cross-language format is ever
+adopted here, the vectors are not the last step — they are the thing that makes the
+format real.
+
+Retained below as design history only.
+
+> nq-standing decision receipts are WLP DECISION messages. Options:
+> 1. Thin receipt format forward-compatible with WLP (same JSON, same hash, no sigs yet)
+> 2. WLP Phase 1 ships as a library consumed by both Governor and nq-standing
+>
+> Since Governor is Python and nq-standing is Rust: define the receipt format in WLP, implement natively in each language, verify with shared test vectors.
 
 ## Key architectural lesson from Governor
 

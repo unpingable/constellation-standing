@@ -47,7 +47,7 @@ Always run tests before proposing commits. Never claim tests pass without runnin
 - Push to remote, create/close PRs or issues
 - Delete or rewrite git history
 - Modify dependency files in ways that change the lock file
-- Changing receipt format (WLP compatibility constraint)
+- Changing receipt format (content-addressing constraint: digests rebase)
 - Changing fail-closed receipt semantics
 
 ### Preferred workflow
@@ -86,7 +86,7 @@ NOTES-interruption.md Interruption as first-class state
 
 1. Every grant state transition produces a content-addressed receipt
 2. Receipt write failure aborts the state transition (fail-closed)
-3. Receipt format: canonical JSON + SHA-256 (WLP-compatible)
+3. Receipt format: canonical JSON + SHA-256 (standing's own; no external protocol)
 4. Interruption states (abandoned, lease_expired) are first-class, not edge cases
 
 ---
@@ -102,7 +102,7 @@ NOTES-interruption.md Interruption as first-class state
 ## When you're unsure
 
 Ask for clarification rather than guessing, especially around:
-- Whether a change affects receipt format (WLP compatibility)
+- Whether a change affects receipt format (stored digests rebase)
 - Whether a new grant state should be terminal or non-terminal
 - Anything that changes fail-closed receipt semantics
 

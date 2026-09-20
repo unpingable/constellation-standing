@@ -6,7 +6,10 @@
 //! Receipts form chains: each receipt optionally references a parent, creating
 //! a verifiable sequence of events for a given grant lifecycle.
 //!
-//! Format: canonical JSON (keys sorted) + SHA-256 digest. WLP-compatible.
+//! Format: canonical JSON (keys sorted) + SHA-256 digest. This format is
+//! standing's own and is held to no external protocol. It previously claimed
+//! WLP compatibility; WLP is retired from this integration with no named
+//! consumer and the claim is withdrawn.
 //! No signatures yet — hash is mandatory, signatures are future work.
 
 mod canonical;

@@ -95,13 +95,17 @@ If that path snaps together cleanly, the architecture is real. If it demands ten
 
 **Fail-closed on receipts.** No receipt, no standing. For workload authorization, fail-open means "trust the gap," which is exactly Δw (write-authority drift).
 
-## WLP bridge
+## WLP bridge — RETIRED 2026-09-20
 
-nq-standing decision receipts are WLP DECISION messages. Build receipt format WLP-compatible from the start:
-- Same canonical JSON (RFC 8785 / JCS)
-- Same hash scheme (SHA-256)
-- No signatures yet, hash mandatory
-- Implement natively in Rust (not shared crate yet — just agree on schema)
+**Superseded. Do not implement.** WLP is retired from this integration with no
+named consumer. Standing's receipt format is its own and owes nothing to WLP.
+The text below is retained as design history only.
+
+> nq-standing decision receipts are WLP DECISION messages. Build receipt format WLP-compatible from the start:
+> - Same canonical JSON (RFC 8785 / JCS)
+> - Same hash scheme (SHA-256)
+> - No signatures yet, hash mandatory
+> - Implement natively in Rust (not shared crate yet — just agree on schema)
 
 ## Buyer wedge
 

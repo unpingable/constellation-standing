@@ -52,7 +52,7 @@ standing grant sweep
 - Rust 2024 edition
 - Tests live in each crate as `#[cfg(test)]` modules
 - Entry point: `cargo run -p standing-cli -- <args>`
-- Receipt format is WLP-compatible (canonical JSON, SHA-256, no signatures yet)
+- Receipt format is standing's own (canonical JSON, SHA-256, no signatures yet)
 
 ## Debugging Discipline
 

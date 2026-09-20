@@ -13,7 +13,10 @@ use uuid::Uuid;
 type HmacSha256 = Hmac<Sha256>;
 
 /// Current schema version for identity claims.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
+
+/// Domain for the schema-v2 workload-identity MAC transcript.
+const SIGNING_DOMAIN: &str = "standing.workload-identity.mac/v2";
 
 /// Default identity TTL: 1 hour.
 pub const DEFAULT_TTL_SECS: i64 = 3600;
@@ -346,24 +349,56 @@ pub trait ReplayGuard {
 fn sign(id: &WorkloadId, secret: &[u8]) -> Result<String, IdentityError> {
     let mut mac =
         HmacSha256::new_from_slice(secret).map_err(|e| IdentityError::Hmac(e.to_string()))?;
-    // schema_version and kid are part of the signed payload —
-    // changing either invalidates the signature.
-    mac.update(id.schema_version.to_string().as_bytes());
-    mac.update(b"|");
-    mac.update(id.kid.as_bytes());
-    mac.update(b"|");
-    mac.update(id.jti.as_bytes());
-    mac.update(b"|");
-    mac.update(id.name.as_bytes());
-    mac.update(b"|");
-    mac.update(id.location.as_bytes());
-    mac.update(b"|");
-    mac.update(id.audience.as_bytes());
-    mac.update(b"|");
-    mac.update(id.issued_at.to_rfc3339().as_bytes());
-    mac.update(b"|");
-    mac.update(id.expires_at.to_rfc3339().as_bytes());
+    mac.update(&signing_transcript(id));
     Ok(hex::encode(mac.finalize().into_bytes()))
+}
+
+/// Construct the schema-v2 MAC transcript over every semantic identity field.
+///
+/// The domain, field labels, and values are independently length-delimited.
+/// Numeric values use fixed-width big-endian encodings. This is deliberately a
+/// local identity protocol rather than a dependency on another office's
+/// transcript implementation.
+fn signing_transcript(id: &WorkloadId) -> Vec<u8> {
+    let schema_version = id.schema_version.to_be_bytes();
+    let issued_at = timestamp_bytes(&id.issued_at);
+    let expires_at = timestamp_bytes(&id.expires_at);
+
+    encode_transcript(
+        SIGNING_DOMAIN,
+        &[
+            ("schema_version", &schema_version),
+            ("kid", id.kid.as_bytes()),
+            ("jti", id.jti.as_bytes()),
+            ("name", id.name.as_bytes()),
+            ("location", id.location.as_bytes()),
+            ("audience", id.audience.as_bytes()),
+            ("issued_at", &issued_at),
+            ("expires_at", &expires_at),
+        ],
+    )
+}
+
+fn timestamp_bytes(value: &DateTime<Utc>) -> [u8; 12] {
+    let mut bytes = [0_u8; 12];
+    bytes[..8].copy_from_slice(&value.timestamp().to_be_bytes());
+    bytes[8..].copy_from_slice(&value.timestamp_subsec_nanos().to_be_bytes());
+    bytes
+}
+
+fn encode_transcript(domain: &str, fields: &[(&str, &[u8])]) -> Vec<u8> {
+    let mut transcript = Vec::new();
+    append_length_prefixed(&mut transcript, domain.as_bytes());
+    for (label, value) in fields {
+        append_length_prefixed(&mut transcript, label.as_bytes());
+        append_length_prefixed(&mut transcript, value);
+    }
+    transcript
+}
+
+fn append_length_prefixed(transcript: &mut Vec<u8>, value: &[u8]) {
+    transcript.extend_from_slice(&(value.len() as u64).to_be_bytes());
+    transcript.extend_from_slice(value);
 }
 
 /// Compute a hex HMAC-SHA256 tag over `msg` with `secret`. The shared MAC
@@ -503,6 +538,7 @@ pub fn verify_and_resolve_with_keys(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
 
     const SECRET: &[u8] = b"test-secret";
 
@@ -512,6 +548,97 @@ mod tests {
 
     fn default_verify() -> VerifyOptions {
         VerifyOptions::default()
+    }
+
+    fn fixed_identity() -> WorkloadId {
+        WorkloadId {
+            schema_version: SCHEMA_VERSION,
+            kid: "key|2026".to_string(),
+            jti: "00000000-1111-2222-3333-444444444444".to_string(),
+            name: "deploy|bot".to_string(),
+            location: "host/alpha".to_string(),
+            audience: "standing:test".to_string(),
+            issued_at: Utc.timestamp_opt(1_700_000_000, 123_456_789).unwrap(),
+            expires_at: Utc.timestamp_opt(1_700_003_600, 987_654_321).unwrap(),
+            signature: String::new(),
+        }
+    }
+
+    #[test]
+    fn transcript_delimits_pipe_containing_values() {
+        let left = encode_transcript("test/v1", &[("first", b"a|b"), ("second", b"c")]);
+        let right = encode_transcript("test/v1", &[("first", b"a"), ("second", b"b|c")]);
+
+        assert_ne!(left, right);
+        assert_ne!(hmac_hex(SECRET, &left), hmac_hex(SECRET, &right));
+    }
+
+    #[test]
+    fn transcript_binds_empty_values_labels_and_positions() {
+        let with_empty = encode_transcript("test/v1", &[("a", b""), ("b", b"x")]);
+        let repartitioned = encode_transcript("test/v1", &[("a", b"b"), ("x", b"")]);
+        let omitted = encode_transcript("test/v1", &[("b", b"x")]);
+
+        assert_ne!(with_empty, repartitioned);
+        assert_ne!(with_empty, omitted);
+    }
+
+    #[test]
+    fn transcript_binds_field_order() {
+        let ordered = encode_transcript("test/v1", &[("a", b"1"), ("b", b"2")]);
+        let reversed = encode_transcript("test/v1", &[("b", b"2"), ("a", b"1")]);
+
+        assert_ne!(ordered, reversed);
+    }
+
+    #[test]
+    fn every_identity_field_changes_the_tag() {
+        let original = fixed_identity();
+        let original_tag = sign(&original, SECRET).unwrap();
+        let mut mutations = Vec::new();
+
+        let mut changed = original.clone();
+        changed.schema_version += 1;
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.kid.push('x');
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.jti.push('x');
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.name.push('x');
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.location.push('x');
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.audience.push('x');
+        mutations.push(changed);
+        let mut changed = original.clone();
+        changed.issued_at += Duration::nanoseconds(1);
+        mutations.push(changed);
+        let mut changed = original;
+        changed.expires_at += Duration::nanoseconds(1);
+        mutations.push(changed);
+
+        for changed in mutations {
+            assert_ne!(sign(&changed, SECRET).unwrap(), original_tag);
+        }
+    }
+
+    #[test]
+    fn schema_v2_transcript_and_tag_match_frozen_vector() {
+        let id = fixed_identity();
+
+        assert_eq!(
+            hex::encode(signing_transcript(&id)),
+            "00000000000000217374616e64696e672e776f726b6c6f61642d6964656e746974792e6d61632f7632000000000000000e736368656d615f76657273696f6e00000000000000040000000200000000000000036b696400000000000000086b65797c3230323600000000000000036a7469000000000000002430303030303030302d313131312d323232322d333333332d34343434343434343434343400000000000000046e616d65000000000000000a6465706c6f797c626f7400000000000000086c6f636174696f6e000000000000000a686f73742f616c706861000000000000000861756469656e6365000000000000000d7374616e64696e673a7465737400000000000000096973737565645f6174000000000000000c000000006553f100075bcd15000000000000000a657870697265735f6174000000000000000c000000006553ff103ade68b1"
+        );
+        assert_eq!(
+            sign(&id, SECRET).unwrap(),
+            "0b051569152369fab517921b4c6cafe1db5a29c640a733f0fa3b9761cc77beef"
+        );
     }
 
     #[test]
@@ -835,6 +962,15 @@ mod tests {
         let mut id = create_identity("bot", "host-1", SECRET, &default_opts()).unwrap();
         // Tamper the version (signature will mismatch, but version check is first)
         id.schema_version = 99;
+
+        let result = verify_identity(&id, SECRET, &default_verify());
+        assert_eq!(result, AssessmentResult::UnsupportedVersion);
+    }
+
+    #[test]
+    fn schema_v1_identity_is_rejected() {
+        let mut id = create_identity("bot", "host-1", SECRET, &default_opts()).unwrap();
+        id.schema_version = 1;
 
         let result = verify_identity(&id, SECRET, &default_verify());
         assert_eq!(result, AssessmentResult::UnsupportedVersion);

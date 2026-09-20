@@ -145,7 +145,9 @@ Invariants (mirrored from the act primitive):
 - Standing-to-assert does **not** mean the claim is true. It only means the actor is permitted to introduce that class of testimony to that audience. NQ still decides what the evidence can testify to. Nightshift still decides posture. Wicket still preflights action.
 - Standing-to-request does **not** mean the action is admissible. It means the actor is permitted to ask. Wicket decides whether the ask becomes a do.
 - Receipts at every state transition that *does* exist. Fail-closed on receipts.
-- Content-addressed (RFC 8785 JCS + SHA-256). WLP-compatible.
+- Content-addressed (deterministic JSON + SHA-256). Standing's own format; not RFC
+  8785 (JCS), and no longer claimed WLP-compatible — WLP is retired from this
+  integration.
 
 ### `subject_id` vs `subject_scope` — vocabulary that should stop blurring
 
