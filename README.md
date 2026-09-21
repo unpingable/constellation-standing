@@ -11,8 +11,8 @@ Public source: <https://github.com/unpingable/constellation-standing>.
 > separately instantiated, not part of the current operational vertical.**
 > This repository implements the jurisdiction "may this actor act or assert,
 > now, under what mandate — with expiry, revocation, replay-refusal, and
-> delegation denied by default." It is **not absorbed** by AG ng or Docket:
-> AG ng's authorization rests on an asserted principal-authentication
+> delegation denied by default." It is **not absorbed** by Constellation AG or Docket:
+> Constellation AG's authorization rests on an asserted principal-authentication
 > premise (not mandate custody), and Docket's local standing is a
 > domain-local execution capability, not the mandate. Its consumers are the
 > classic lineage (AG classic `standing_client`, transition-kernel
@@ -125,7 +125,7 @@ Re-verify at every consequence-bearing gate.
 
 - Not an identity provider, policy engine, admissibility governor, actuator, workflow engine, or agent platform
 - Not a truth or evidence evaluator; assertion standing says who may speak in a
-  role, while systems such as [NQ](https://github.com/jbeck/nq) decide what the
+  role, while systems such as [Constellation NQ](https://github.com/unpingable/constellation-nq) decide what the
   evidence can testify to
 - Not an admissibility lock; an admissibility layer such as Wicket or a consuming [Governor](https://github.com/jbeck/agent_gov) decides whether entitlement may bind consequence
 - Not a secret store, service mesh, workforce IAM, or PKI project
