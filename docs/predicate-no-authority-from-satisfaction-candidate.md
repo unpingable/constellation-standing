@@ -8,7 +8,7 @@
 > root. AG authorizes the *filing*; Standing owns the *doctrine*. See AG
 > `docs/cross-tool/managed-repo-candidate-filing-note.md`.
 > **Provenance:** cross-model thread (operator + Claude + ChatGPT + DeepSeek),
-> 2026-06-25, from an atproto/Community-Notes specimen. Canonical capture:
+> 2026-06-25, from an external application specimen. Canonical capture:
 > agent_gov `docs/cross-tool/predicate-witness-infrastructure-note.md`.
 > **Composes with:** `docs/standing-clock-witness-candidate.md` (Standing's
 > refusal is the one non-mechanical refusal in the constellation — *the asker
