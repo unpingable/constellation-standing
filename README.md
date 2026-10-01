@@ -254,3 +254,7 @@ Licensed under Apache-2.0.
 Standing owns the operator-to-mandate binding and consumes the exact,
 single-use grant before each diagnostic acquisition. It does not acquire or
 interpret evidence. See the local [Operational ECAD journey](/data/git/operational-ecad/README.md).
+
+## Beta work planning
+
+See the [current beta work plan](docs/BETA-WORK.md) for owned requirements, exclusions, dependencies and GitHub issues. Plan publication does not start implementation or transfer qualification.
